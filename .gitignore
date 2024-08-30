@@ -1,0 +1,5 @@
+# Rust-specific gitignore
+/target
+
+# Problem folder: each problem gets its own folder with the input(s)
+/inputs
