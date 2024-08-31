@@ -1,0 +1,6 @@
+number = { DECIMAL_NUMBER+ }
+color = { "red" | "green" | "blue" }
+colorcount = { (number+) ~ " " ~ color }
+draw = { colorcount ~ (", " ~ colorcount)* }
+game = { "Game " ~ (number+) ~ ": " ~ draw ~ ("; " ~ draw)* }
+file = { SOI ~ game ~ (NEWLINE ~ game?)* ~ EOI }

@@ -2,4 +2,4 @@
 
 I am bored
 
-Run binaries with `cargo run pXX`, with `XX` being the problem number.
+Run binaries with `cargo run --bin pXX`, with `XX` being the problem number.
