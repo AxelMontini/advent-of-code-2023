@@ -10,6 +10,7 @@ fn main() {
     // idea: find symbols. Check if there is a number adjacent ot it
     // (must touch any of the four sides, corners are also ok).
     let mut part_ids = vec![];
+    let mut sum_of_ratios = 0;
 
     for (r_idx, row) in contents.iter().enumerate() {
         for (c_idx, &c) in row.iter().enumerate() {
@@ -17,8 +18,16 @@ fn main() {
             match c {
                 '.' | '0'..='9' => (), // not a symbol
                 _ if c.is_ascii_punctuation() => {
-                    for id in get_part_id(&contents, r_idx, c_idx) {
-                        part_ids.push(id);
+                    if let Some((p, ids)) = get_part_id(&contents, r_idx, c_idx) {
+                        // if part is a gear, accumulate gear ratio (two part numbers, ratio = a * b)
+                        if p == '*' && ids.len() == 2 {
+                            sum_of_ratios += ids[0].3 * ids[1].3;
+                        }
+
+                        // add part id in vector
+                        for id in ids {
+                            part_ids.push(id);
+                        }
                     }
                 }
                 o => unreachable!("Got impossible char: {o:?}"),
@@ -33,6 +42,7 @@ fn main() {
         "Sum of part ids: {}",
         part_ids.iter().map(|(_, _, _, n)| n).sum::<u32>()
     );
+    println!("Sum of gear ratios: {sum_of_ratios}");
 }
 
 /// This can create duplicates. Be sure to remove them!
@@ -43,7 +53,7 @@ fn get_part_id(
     contents: &Vec<Vec<u8>>,
     r_idx: usize,
     c_idx: usize,
-) -> Vec<(usize, usize, usize, u32)> {
+) -> Option<(char, Vec<(usize, usize, usize, u32)>)> {
     let val =
         |r_idx: usize, c_idx: usize| contents.get(r_idx).and_then(|row| row.get(c_idx)).copied();
 
@@ -66,7 +76,7 @@ fn get_part_id(
             .unwrap_or(false)
     });
 
-    digit_pos
+    let mut part_ids: Vec<_> = digit_pos
         .map(|(dr, mut dc)| {
             // go left until the start of the number
             while dc > 0 {
@@ -87,5 +97,14 @@ fn get_part_id(
 
             (dr, dc, len, number)
         })
-        .collect()
+        .collect();
+
+    part_ids.sort();
+    part_ids.dedup();
+
+    if part_ids.is_empty() {
+        None
+    } else {
+        Some((contents[r_idx][c_idx] as char, part_ids))
+    }
 }
