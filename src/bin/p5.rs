@@ -1,4 +1,4 @@
-use std::fs;
+use std::{collections::VecDeque, fs};
 
 use pest::Parser;
 use pest_derive::Parser;
@@ -99,4 +99,69 @@ fn main() {
         "Lowest location number corresponding to a valid seed: {}",
         tt.iter().min().unwrap()
     );
+
+    // part 2. Need to change the meaning of `seeds`. Now it contains pairs of (start, len).
+    // I basically do the same thing, but I can't do that for each seed number.
+    // Instead, I transform **ranges** by mapping them to the next table thingy.
+    //
+
+    let mut ranges: Vec<_> = seeds
+        .chunks_exact(2)
+        .map(|pair| pair[0]..(pair[0] + pair[1]))
+        .collect();
+
+    for map in &maps {
+        let mut result = vec![];
+        for src_range in ranges.iter_mut() {
+            let mut leftover = VecDeque::from_iter(Some(src_range.clone()));
+            while let Some(num_range) = leftover.pop_front() {
+                let result_len = result.len();
+                for mapping in map {
+                    // Now map the num range to the next table. Note that we may have to split it in UP TO
+                    // 3 COMPONENTS for every mapping! Specifically, the situations might be
+                    // 1. [     ]    (    )                         not intersecting at all
+                    // 2. (    [     ]) or (       [     )    ]     intersecting, only 2 seed ranges are
+                    //    produces
+                    // 3. (  [  ]   ) intersecting, 3 seed ranges are produced
+                    // Intersect at all?
+                    if !(num_range.start < (mapping.src + mapping.len)
+                        && num_range.end > mapping.src)
+                    {
+                        continue; // no intesection
+                    }
+
+                    // try to split in 3 parts
+                    // prefix of num range with no intersection
+                    if num_range.start < mapping.src {
+                        leftover.push_back(num_range.start..mapping.src);
+                    }
+
+                    // num intersecting mapping
+                    let intersection_range = (num_range.start.max(mapping.src))
+                        ..(num_range.end.min(mapping.src + mapping.len));
+                    result.push(
+                        (intersection_range.start + mapping.dst - mapping.src)
+                            ..(intersection_range.end + mapping.dst - mapping.src),
+                    );
+
+                    // suffix of num range with no intersection
+                    if num_range.end > mapping.src + mapping.len {
+                        leftover.push_back((mapping.src + mapping.len)..num_range.end);
+                    }
+                }
+                // if no mapping applies to this leftover, map it 1:1 (put it in result)
+                if result_len == result.len() {
+                    result.push(num_range);
+                }
+            }
+        }
+        // now result contains all the new items produces by processing the ranges. Replace `ranges`
+        // with it.
+        ranges = result;
+    }
+
+    // please no duplicates... Otherwise algo is wrong, or mappings overlap (yikes!)
+    let min_location = ranges.iter().map(|r| r.start).min().unwrap();
+
+    println!("Min location when using seed range representation: {min_location}");
 }
