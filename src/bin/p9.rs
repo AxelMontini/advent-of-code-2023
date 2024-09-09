@@ -1,4 +1,3 @@
-use core::fmt;
 use std::{borrow::Cow, fs};
 
 #[derive(Clone, Debug)]
@@ -50,7 +49,7 @@ impl<'d> History<'d> {
         let mut row_i = self.rows - 1;
         loop {
             let b = self.history[i];
-            v = b + v;
+            v += b;
 
             if row_i == 0 {
                 break;
@@ -153,7 +152,7 @@ mod tests {
         // High-degree polynomial test
         {
             let f = |x: i64| x.pow(10);
-            let input: Vec<_> = (-50..=50).map(|x| f(x)).collect();
+            let input: Vec<_> = (-50..=50).map(f).collect();
 
             let h = History::new(input);
             assert_eq!(f(51), h.extrapolate_back());

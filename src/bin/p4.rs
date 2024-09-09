@@ -37,7 +37,7 @@ fn main() {
     for (card_idx, m) in card_matches.into_iter().enumerate() {
         let n = card_count[card_idx];
         if let Some(to_increment) =
-            card_count.get_mut((card_idx + 1)..cards_len.min(card_idx + 1 + m as usize))
+            card_count.get_mut((card_idx + 1)..cards_len.min(card_idx + 1 + m))
         {
             to_increment.iter_mut().for_each(|count| *count += n);
         }

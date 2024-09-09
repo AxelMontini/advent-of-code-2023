@@ -11,7 +11,6 @@ fn main() {
         .expect("getting times line")
         .strip_prefix("Time:")
         .unwrap()
-        .trim()
         .split_whitespace()
         .map(|n| n.parse())
         .collect::<Result<_, _>>()
@@ -21,7 +20,6 @@ fn main() {
         .expect("getting distances line")
         .strip_prefix("Distance:")
         .unwrap()
-        .trim()
         .split_whitespace()
         .map(|n| n.parse())
         .collect::<Result<_, _>>()
@@ -43,13 +41,13 @@ fn main() {
         let delta = ((time * time - 4 * distance) as f64).sqrt();
         let held1 = (time as f64 + delta) / 2.0;
         let held2 = (time as f64 - delta) / 2.0;
-        let ways = (held1.floor() - held2.ceil()) as u64 + 1;
-        ways
+        
+        (held1.floor() - held2.ceil()) as u64 + 1
     };
 
     let ways_product: u64 = times
         .into_iter()
-        .zip(distances.into_iter())
+        .zip(distances)
         .enumerate()
         .map(|(game_id, (time, distance))| (game_id, ways(time, distance)))
         .inspect(|(game_id, ways)| {
@@ -71,7 +69,7 @@ fn main() {
         .unwrap()
         .trim()
         .chars()
-        .filter(|c| c.is_digit(10))
+        .filter(|c| c.is_ascii_digit())
         .collect::<String>();
     let distance = lines
         .next()
@@ -80,7 +78,7 @@ fn main() {
         .unwrap()
         .trim()
         .chars()
-        .filter(|c| c.is_digit(10))
+        .filter(|c| c.is_ascii_digit())
         .collect::<String>();
 
     println!("Time {time:?}, distance {distance:?}");

@@ -72,7 +72,7 @@ fn get_part_id(
     .into_iter()
     .filter(|p| {
         val(p.0, p.1)
-            .map(move |c| (c as char).is_digit(10))
+            .map(move |c| (c as char).is_ascii_digit())
             .unwrap_or(false)
     });
 
@@ -81,7 +81,7 @@ fn get_part_id(
             // go left until the start of the number
             while dc > 0 {
                 // cannot be None, otherwise puzzle makes no sense
-                if (val(dr, dc - 1).unwrap() as char).is_digit(10) {
+                if (val(dr, dc - 1).unwrap() as char).is_ascii_digit() {
                     dc -= 1;
                 } else {
                     break;
@@ -90,7 +90,7 @@ fn get_part_id(
 
             let len = contents[dr][dc..]
                 .iter()
-                .position(move |&c| !(c as char).is_digit(10))
+                .position(move |&c| !(c as char).is_ascii_digit())
                 .unwrap_or(contents[dr].len() - dc);
             let number_str = std::str::from_utf8(&contents[dr][dc..(dc + len)]).unwrap();
             let number = u32::from_str_radix(number_str, 10).unwrap();

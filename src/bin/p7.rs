@@ -5,7 +5,6 @@
 //! I can use `3 bits` to encode the hand type, and `5*4 == 20` bits to describe each value of the hand,
 //! allowing for a very fast and simple comparison between different hands, and thus sorting.
 
-use arrayvec::ArrayVec;
 use std::{fs, str::FromStr};
 use thiserror::Error;
 
@@ -51,7 +50,7 @@ impl From<u8> for HandType {
 
 impl<T> Hand<T> {
     pub fn hand_type(self) -> HandType {
-        ((self.0 >> 5 * 4) as u8).into()
+        ((self.0 >> (5 * 4)) as u8).into()
     }
 }
 
@@ -101,7 +100,7 @@ impl FromStr for Hand<Normal> {
                 .filter(move |&(j, other)| j != i && other == card)
                 .count();
 
-            let cur_hand_type = (values >> 5 * 4) as u8;
+            let cur_hand_type = (values >> (5 * 4)) as u8;
 
             let new_hand_type = match (count, cur_hand_type.into()) {
                 (2, HandType::ThreeOfAKind) | (2, HandType::Pair) => cur_hand_type + 1, // adds a pair to current value
@@ -113,7 +112,7 @@ impl FromStr for Hand<Normal> {
                 _ => cur_hand_type,
             };
 
-            values = (values & 0xFFFFF) | (new_hand_type as u32) << 5 * 4;
+            values = (values & 0xFFFFF) | (new_hand_type as u32) << (5 * 4);
 
             processed[i] = card;
         }
@@ -172,7 +171,7 @@ impl FromStr for Hand<Joker> {
                 .filter(move |&(j, other)| j != i && other == card)
                 .count();
 
-            let cur_hand_type = (values >> 5 * 4) as u8;
+            let cur_hand_type = (values >> (5 * 4)) as u8;
 
             let new_hand_type = match (count, cur_hand_type.into()) {
                 (2, HandType::ThreeOfAKind) | (2, HandType::Pair) => cur_hand_type + 1, // adds a pair to current value
@@ -184,13 +183,13 @@ impl FromStr for Hand<Joker> {
                 _ => cur_hand_type,
             };
 
-            values = (values & 0xFFFFF) | (new_hand_type as u32) << 5 * 4;
+            values = (values & 0xFFFFF) | (new_hand_type as u32) << (5 * 4);
 
             processed[i] = card;
         }
 
         let joker_count = s.chars().filter(move |&c| c == 'J').count();
-        let cur_hand_type = ((values >> 5 * 4) as u8).into();
+        let cur_hand_type = ((values >> (5 * 4)) as u8).into();
 
         let joker_hand_type = match (joker_count, cur_hand_type) {
             (0, a) => a,
@@ -216,7 +215,7 @@ impl FromStr for Hand<Joker> {
             }
         };
 
-        values = (values & 0xFFFFF) | (joker_hand_type as u32) << 5 * 4;
+        values = (values & 0xFFFFF) | (joker_hand_type as u32) << (5 * 4);
 
         Ok(Hand(values, Default::default()))
     }
