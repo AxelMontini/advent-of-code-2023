@@ -8,13 +8,13 @@ fn main() {
         // find first, then find last. Add to code
         for i in 0..l.len() {
             if let Some(digit) = str_to_digit(&l[i..]) {
-                code += 10*digit; 
+                code += 10 * digit;
                 break;
             }
         }
         for i in (0..l.len()).rev() {
             if let Some(digit) = str_to_digit(&l[i..]) {
-                code += digit; 
+                code += digit;
                 break;
             }
         }
@@ -30,7 +30,13 @@ fn str_to_digit(s: &str) -> Option<u32> {
         ]
         .iter()
         .enumerate()
-        .find_map(|(i, d)| if s.starts_with(d) { Some(i as u32 + 1) } else { None })
+        .find_map(|(i, d)| {
+            if s.starts_with(d) {
+                Some(i as u32 + 1)
+            } else {
+                None
+            }
+        })
     });
 
     digit

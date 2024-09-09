@@ -51,7 +51,6 @@ fn main() {
         );
     }
 
-
     // Find sum of power for all games
     let power_sum: u32 = games.iter().map(|(_game_id, draws)| min_power(draws)).sum();
     println!("Power sum of all games: {power_sum}");
