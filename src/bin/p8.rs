@@ -42,7 +42,8 @@ fn main() {
     // determine how many cycles we need a lot faster than by simulating everything.
     let mut ghosts: Vec<&str> = adjacency_list
         .keys()
-        .filter(|node| node.ends_with('A')).copied()
+        .filter(|node| node.ends_with('A'))
+        .copied()
         .collect();
     println!("Ghosts {ghosts:?}");
     let mut steps_to_z = vec![vec![]; ghosts.len()];

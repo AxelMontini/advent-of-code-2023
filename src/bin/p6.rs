@@ -41,7 +41,7 @@ fn main() {
         let delta = ((time * time - 4 * distance) as f64).sqrt();
         let held1 = (time as f64 + delta) / 2.0;
         let held2 = (time as f64 - delta) / 2.0;
-        
+
         (held1.floor() - held2.ceil()) as u64 + 1
     };
 
