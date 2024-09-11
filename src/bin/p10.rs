@@ -87,7 +87,7 @@ fn main() {
     // [current, previous] positions, start at s_pos, then walk in opposite directions
     let mut start_segments = next_segments(s_pos, s_pos);
     let mut walker = (start_segments.next().unwrap(), s_pos, 1);
-    let mut loop_bitmap = vec![0; content.len()];
+    let mut loop_bitmap = vec![0i32; content.len()];
     loop_bitmap[pos_to_idx(s_pos.0, s_pos.1)] = 1;
     println!("Start with S = {s_pos:?}, walker = {walker:?}");
 
@@ -186,18 +186,18 @@ fn main() {
                         (0, _) => 0,
                         (d, b'L' | b'J') => loop_bitmap
                             .get(pos_to_idx(col_id, row_id - 1))
-                            .map(|&v| d as i32 - v as i32)
+                            .map(|&v| d - v)
                             .map(|v| if v.abs() > 2 { -v.signum() } else { v })
                             .unwrap_or(0),
                         (d, b'7' | b'F') => loop_bitmap
                             .get(pos_to_idx(col_id, row_id + 1))
-                            .map(|&v| v as i32 - d as i32)
+                            .map(|&v| v - d)
                             .map(|v| if v.abs() > 2 { -v.signum() } else { v })
                             .unwrap_or(0),
                         (d, b'|') => {
                             loop_bitmap
                                 .get(pos_to_idx(col_id, row_id - 1))
-                                .map(|&v| d as i32 - v as i32)
+                                .map(|&v| d - v)
                                 .map(|v| if v.abs() > 2 { -v.signum() } else { v })
                                 .unwrap_or(0)
                                 * 2
