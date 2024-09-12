@@ -1,12 +1,19 @@
-//! Row ?????????????,1,1,1,1
-//! Contains 4 contiguous sequences of 1 broken spring each.
-//! There needs to be at least 1 space between each set, and any amount of space
-//! between a set and the line boundary.
-//! Let `n` be the length of the line, `ss` be the space between the start and the first set,
-//! `s0, s1, ...` the space between the first set and the second, the second and the third, ...,
-//! and `se` the space between the last set and the end.
-//! By varying these parameters we can obtain different configurations.
-//! These can be narrowed down by checking the known values in each row.
+//! # Overview
+//!
+//! The recursive operation first checks if there are any sets left. If not, then it returns
+//! 1 when only spaces remain in the string (or empty), otherwise 0.
+//! The recursive operation is, for all possible prefix space counts (from 1 to ...):
+//! 1. Check if prefix is all possible spaces (`?` or `.`)
+//! 2. Check if the current set exists starting after the spaces (`?` or `#`)
+//! 3. If both conditions are true, run the operation again on the remainder of the string/sets and
+//!    add the result to count
+//! Once the loop is over, return the count.
+//!
+//! This operation is memoized for part 2, otherwise runtime quickly approaches balls.
+//! Note that, to decrease runtime a bit, I trim `.` from the string. This must be done AFTER
+//! the "repeat" operation in part 2, otherwise it breaks the result (I was doing this in `parse_line` initially,
+//! and it caused a big headache before I realized why all tests were passing, but the program
+//! was wrong)...
 
 use std::fs;
 
@@ -24,7 +31,7 @@ fn main() {
         .lines()
         .map(parse_line)
         .map(|(ar, s)| (format!("{0}?{0}?{0}?{0}?{0}", ar), s.repeat(5)))
-        .map(|(arrangement, sets)| count_arrangements(&arrangement.trim_matches('.'), &sets[..]))
+        .map(|(arrangement, sets)| count_arrangements(arrangement.trim_matches('.'), &sets[..]))
         .sum();
 
     println!("[PART 2] Sum of arrangements: {count}");
@@ -56,13 +63,7 @@ fn count_arrangements(arrangement: &str, sets: &[usize]) -> usize {
     let ar_len_initial = arrangement.len();
     let mut memo = vec![0; (sets.len() + 1) * ar_len_initial + 1];
     let memo_idx = move |ar_len, sets_len| sets_len * ar_len_initial + ar_len;
-    recurse(
-        &arrangement,
-        &sets[..],
-        max_spaces,
-        &mut memo[..],
-        &memo_idx,
-    )
+    recurse(&arrangement, sets, max_spaces, &mut memo[..], &memo_idx)
 }
 
 fn is_working(c: char) -> bool {
