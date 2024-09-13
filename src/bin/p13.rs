@@ -18,45 +18,47 @@ fn main() {
     // scan the blocks' rows and columns. Start at a certain position, and try to match the two
     // halves
     for (id, block) in blocks.into_iter().enumerate() {
-        // Mirror is at index `col` (between element `col-1` and `col`)
-        part1 += get_vertical_refl_line(&block).unwrap_or(0);
+        part1 += get_vertical_refl_line(&block, 0)
+            .or_else(|| get_horizontal_refl_line(&block, 0).map(|v| v * 100))
+            .expect("there must be a reflection line");
 
-        // Mirror is at index `row` (between rows `row-1` and `row`)
-        part1 += 100 * get_horizontal_refl_line(&block).unwrap_or(0);
+        part2 += get_vertical_refl_line(&block, 1)
+            .or_else(|| get_horizontal_refl_line(&block, 1).map(|v| v * 100))
+            .expect("there must be a reflection line");
     }
 
     println!("[PART 1] Sum of cols/rows according to spec: {part1}");
+    println!("[PART 2] Sum of cols/rows according to spec: {part2}");
 }
 
-fn get_refl_line<I, T>(it: I) -> Option<usize>
+/// Compare the two sequences.
+/// Find the index at which the second reflection starts.
+/// Exactly `diffs` pairs can differ
+fn get_refl_line<I>(it: I, diffs: u32) -> Option<usize>
 where
-    I: Iterator<Item = T> + Clone + DoubleEndedIterator + ExactSizeIterator,
-    T: Eq + std::fmt::Debug,
+    I: Iterator<Item = u64> + Clone + DoubleEndedIterator + ExactSizeIterator,
 {
     let len = it.len();
     for idx in 1..len {
         let min_length = idx.min(len - idx);
+        // Iterate over pairs of elements.
+        // Get all the elements that DIFFER.
+        // Get the count of all the ones that differ by ONE bit. Fail if any differs by more.
+        // Exactly `diffs` pairs must differ (the Some(diffs) eq check is to ensure the prev two
+        // properties).
         let halves_equal = it
             .clone()
             .skip(idx - min_length)
             .take(min_length)
             .rev()
-            .eq(it.clone().skip(idx).take(min_length));
+            .zip(it.clone().skip(idx).take(min_length))
+            .filter(|(a, b)| a != b)
+            .try_fold(0, |acc, (a, b)| {
+                ((a ^ b).count_ones() <= 1).then_some(acc + 1)
+            })
+            == Some(diffs);
 
-        println!(
-            "Up {idx}: {:?}",
-            it.clone()
-                .skip(idx - min_length)
-                .take(min_length)
-                .rev()
-                .collect::<Vec<_>>()
-        );
-        println!(
-            "Down {idx}: {:?}",
-            it.clone().skip(idx).take(min_length).collect::<Vec<_>>()
-        );
         if halves_equal {
-            println!("AAA {idx}");
             return Some(idx);
         }
     }
@@ -64,13 +66,13 @@ where
     None
 }
 
-fn get_vertical_refl_line(block: &Block) -> Option<usize> {
-    let col = get_refl_line(block.columns.iter().copied());
+fn get_vertical_refl_line(block: &Block, diffs: u32) -> Option<usize> {
+    let col = get_refl_line(block.columns.iter().copied(), diffs);
     col
 }
 
-fn get_horizontal_refl_line(block: &Block) -> Option<usize> {
-    let row = get_refl_line(block.rows.iter().copied());
+fn get_horizontal_refl_line(block: &Block, diffs: u32) -> Option<usize> {
+    let row = get_refl_line(block.rows.iter().copied(), diffs);
     row
 }
 
@@ -137,6 +139,42 @@ mod tests {
             let block = crate::parse_block(input);
             assert_eq!(cols, block.columns);
             assert_eq!(rows, block.rows);
+        }
+    }
+
+    #[test]
+    fn reflections() {
+        let values = [
+            (
+                "#.##..##.\n\
+            ..#.##.#.\n\
+            ##......#\n\
+            ##......#\n\
+            ..#.##.#.\n\
+            ..##..##.\n\
+            #.#.##.#.",
+                0,
+                Some(5),
+                None,
+            ),
+            (
+                "#.##..##.\n\
+            ..#.##.#.\n\
+            ##......#\n\
+            ##......#\n\
+            ..#.##.#.\n\
+            ..##..##.\n\
+            #.#.##.#.",
+                1,
+                None,
+                Some(3),
+            ),
+        ];
+
+        for (input, diffs, exp_col, exp_row) in values {
+            let block = crate::parse_block(input);
+            assert_eq!(exp_col, crate::get_vertical_refl_line(&block, diffs));
+            assert_eq!(exp_row, crate::get_horizontal_refl_line(&block, diffs));
         }
     }
 }
