@@ -17,7 +17,7 @@ fn main() {
 
     // scan the blocks' rows and columns. Start at a certain position, and try to match the two
     // halves
-    for (id, block) in blocks.into_iter().enumerate() {
+    for block in blocks.into_iter() {
         part1 += get_vertical_refl_line(&block, 0)
             .or_else(|| get_horizontal_refl_line(&block, 0).map(|v| v * 100))
             .expect("there must be a reflection line");
