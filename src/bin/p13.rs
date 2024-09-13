@@ -34,10 +34,7 @@ fn main() {
 /// Compare the two sequences.
 /// Find the index at which the second reflection starts.
 /// Exactly `diffs` pairs can differ
-fn get_refl_line<I>(it: I, diffs: u32) -> Option<usize>
-where
-    I: Iterator<Item = u64> + Clone + DoubleEndedIterator + ExactSizeIterator,
-{
+fn get_refl_line(it: &[u64], diffs: u32) -> Option<usize> {
     let len = it.len();
     for idx in 1..len {
         let min_length = idx.min(len - idx);
@@ -46,12 +43,11 @@ where
         // Get the count of all the ones that differ by ONE bit. Fail if any differs by more.
         // Exactly `diffs` pairs must differ (the Some(diffs) eq check is to ensure the prev two
         // properties).
-        let halves_equal = it
-            .clone()
-            .skip(idx - min_length)
-            .take(min_length)
+        let halves_equal = it[..idx]
+            .iter()
             .rev()
-            .zip(it.clone().skip(idx).take(min_length))
+            .take(min_length)
+            .zip(it[idx..].iter().take(min_length))
             .filter(|(a, b)| a != b)
             .try_fold(0, |acc, (a, b)| {
                 ((a ^ b).count_ones() <= 1).then_some(acc + 1)
@@ -67,13 +63,11 @@ where
 }
 
 fn get_vertical_refl_line(block: &Block, diffs: u32) -> Option<usize> {
-    let col = get_refl_line(block.columns.iter().copied(), diffs);
-    col
+    get_refl_line(&block.columns, diffs)
 }
 
 fn get_horizontal_refl_line(block: &Block, diffs: u32) -> Option<usize> {
-    let row = get_refl_line(block.rows.iter().copied(), diffs);
-    row
+    get_refl_line(&block.rows, diffs)
 }
 
 fn parse_block(s: &str) -> Block {
