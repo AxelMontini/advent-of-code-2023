@@ -37,17 +37,53 @@ fn main() {
     // Then, hopefully, the thing becomes cyclic so I don't have to simulate that many steps...
     let cycles = 1000000000;
 
+    let mut configurations = vec![];
+    let mut cycle_max_idx = 0;
+
     for i in 0..cycles {
+        move_north(&mut field, width, height);
         move_west(&mut field, width, height);
         move_south(&mut field, width, height);
         move_east(&mut field, width, height);
-        move_north(&mut field, width, height);
         let load = compute_load(&field, width, height);
 
         if i % 1000 == 0 {
             println!("Load {i}: {load}");
         }
+
+        if let Some(idx) = configurations
+            .iter()
+            .position(|(c, l)| *l == load && c == &field)
+        {
+            if idx < cycle_max_idx && i > 2 * cycle_max_idx {
+                break;
+            }
+            cycle_max_idx = cycle_max_idx.max(idx);
+        }
+        configurations.push((field.clone(), load));
     }
+
+    // Now actually get the cycle
+    let start = cycle_max_idx + 1;
+    let start_conf = &configurations[start];
+    let next_start = configurations[(start + 1)..]
+        .iter()
+        .position(|conf| conf == start_conf)
+        .unwrap()
+        + start
+        + 1;
+    let len = next_start - start;
+    println!("Found potential cycle {start}:{len}");
+    // test if actually a cycle
+    assert_eq!(
+        configurations[start..(start + len)],
+        configurations[(start + len)..(start + len + len)]
+    );
+
+    // Now we can extrapolate the result at the last cycle.
+    let cycle_pos = (cycles - start - 1) % len;
+    let part2 = configurations[start + cycle_pos].1;
+    println!("[PART 2] Load should be the same as cycle element {cycle_pos}, aka load {part2}");
 }
 
 fn compute_load(field: &Field, width: usize, height: usize) -> usize {
