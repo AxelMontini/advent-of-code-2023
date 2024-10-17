@@ -26,6 +26,15 @@ impl Direction {
             Down => (y + 1 < height).then_some((x, y + 1)),
         }
     }
+
+    fn opposite(self) -> Self {
+        match self {
+            Right => Left,
+            Up => Down,
+            Left => Right,
+            Down => Up,
+        }
+    }
 }
 
 fn main() {
@@ -71,7 +80,7 @@ fn it_is_horrible(
     let mut dp = vec![u32::MAX; grid.len() * 4];
     [Right, Down]
         .into_iter()
-        .for_each(|dir| dp[idx(0, 0, dir)] = grid[0] as _);
+        .for_each(|dir| dp[idx(0, 0, dir)] = 0 as _); // heat loss happens when ENTERING a tile!
 
     let mut q = VecDeque::new();
     q.push_back((0, 0, Right));
@@ -85,11 +94,11 @@ fn it_is_horrible(
     while let Some((x, y, dir)) = q.pop_front() {
         let dirs = [Right, Up, Down, Left]
             .into_iter()
-            .filter(move |&d| d != dir);
+            .filter(move |&d| d != dir && d != dir.opposite());
 
         for d in dirs {
             let mut pos = (x, y);
-            let mut cost = dp[idx(x, y, dir)];
+            let mut cost = dp[idx(x, y, dir)]; // we were NOT moving in direction `d`!
             for m in 1..=*can_move.end() {
                 if let Some(new_pos) = d.translate(1, pos, width, height) {
                     cost = cost + grid[new_pos.0 + new_pos.1 * width] as u32;
@@ -107,6 +116,10 @@ fn it_is_horrible(
             }
         }
     }
+
+    // for row in dp.chunks(width) {
+    //     println!("{row:?}");
+    // }
 
     [Down, Right]
         .into_iter()
