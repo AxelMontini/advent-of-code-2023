@@ -3,12 +3,16 @@ name = "advent-of-code-2023"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+plotters = ["plotters"]
+
 [dependencies]
 arrayvec = "0.7.6"
 colored = "2.1.0"
 itertools = "0.13.0"
 pest = "2.7.11"
 pest_derive = "2.7.11"
+plotters = { version = "0.3.7", optional = true }
 rayon = "1.10.0"
 regex = "1.10.6"
 thiserror = "1.0.63"
