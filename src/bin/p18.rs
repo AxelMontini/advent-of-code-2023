@@ -53,10 +53,10 @@ impl Dir {
     }
     fn is_left_turn(self, rhs: Self) -> bool {
         use Dir::*;
-        match (self, rhs) {
-            (Up, Left) | (Left, Down) | (Down, Right) | (Right, Up) => true,
-            _ => false,
-        }
+        matches!(
+            (self, rhs),
+            (Up, Left) | (Left, Down) | (Down, Right) | (Right, Up)
+        )
     }
     /// returns the direction in vector format (as Pos)
     fn dir_step(self) -> Pos {
@@ -88,7 +88,7 @@ impl Edge {
     /// only horizontal & vertical ==> equal to L2 norm lmaooo
     pub fn l1_norm(&self) -> usize {
         let d = self.0 - self.1;
-        d.0.abs() as usize + d.1.abs() as usize
+        d.0.unsigned_abs() + d.1.unsigned_abs()
     }
 }
 
@@ -167,17 +167,16 @@ fn produce_edges(motions: &[Motion]) -> Vec<Edge> {
     print_edges(&edges_left, &edges_right).unwrap();
 
     // get the max perimeter edge loop (it's the outside one)
-    let edges = [edges_left, edges_right]
-        .into_iter()
-        .max_by_key(|ed| compute_area(&ed))
-        .unwrap();
 
-    edges
+    [edges_left, edges_right]
+        .into_iter()
+        .max_by_key(|ed| ed.iter().map(Edge::l1_norm).sum::<usize>())
+        .unwrap()
 }
 
 #[allow(unused)]
 fn print_edges(edges_1: &[Edge], edges_2: &[Edge]) -> Result<(), Box<dyn std::error::Error>> {
-    #[cfg(feature = "plot")]
+    #[cfg(feature = "plotters")]
     {
         use plotters::prelude::*;
         let path = format!(
