@@ -170,7 +170,7 @@ fn move_line<I: Iterator<Item = Cell> + ExactSizeIterator>(mut line: I) -> Vec<C
 
 #[cfg(test)]
 mod tests {
-    use crate::{move_east, move_line, move_north, move_south, move_west, Cell, Field};
+    use crate::{move_east, move_line, move_north, move_south, move_west, Cell};
 
     #[test]
     fn move_line_easy() {
