@@ -114,14 +114,14 @@ fn produce_edges(motions: &[Motion]) -> Vec<Edge> {
             start_right + m.dir.dir_step() * (m.len - 1) as isize,
         );
 
-        println!("\tsl = {start_left:?} sr = {start_right:?}");
+        // println!("\tsl = {start_left:?} sr = {start_right:?}");
 
         let (start_left, start_right) = match () {
             _ if m_pre.dir.is_left_turn(m.dir) => (start_left, start_right - m.dir.dir_step()),
             _ if m_pre.dir.is_right_turn(m.dir) => (start_left - m.dir.dir_step(), start_right),
             _ => (start_left, start_right),
         };
-        println!("\tsl = {start_left:?} sr = {start_right:?}");
+        // println!("\tsl = {start_left:?} sr = {start_right:?}");
 
         let (end_left, end_right) = match () {
             _ if m.dir.is_left_turn(m_next.dir) => (end_left, end_right + m.dir.dir_step()),
@@ -146,10 +146,10 @@ fn produce_edges(motions: &[Motion]) -> Vec<Edge> {
         assert_ne!(a.dir, b.dir);
         assert_ne!(c.dir, b.dir);
 
-        println!("{a:?}-{b:?}-{c:?}");
+        // println!("{a:?}-{b:?}-{c:?}");
         let (el, er) = edge_pair(pos, a, b, c);
-        println!("el = {el:?}, er = {er:?}");
-        println!("==================================");
+        // println!("el = {el:?}, er = {er:?}");
+        // println!("==================================");
         if i != 0 {
             assert_eq!(edges_left.last().unwrap().1, el.0);
             assert_eq!(edges_right.last().unwrap().1, er.0);

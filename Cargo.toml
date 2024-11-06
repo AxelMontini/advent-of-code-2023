@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-plotters = ["plotters"]
+plotters = ["dep:plotters"]
 
 [dependencies]
 arrayvec = "0.7.6"
