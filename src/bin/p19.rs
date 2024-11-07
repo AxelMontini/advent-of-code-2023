@@ -165,7 +165,7 @@ fn parse_part(c: &str) -> Part {
     c.split(',').fold(Part::default(), set_kv)
 }
 
-fn parse_rule<'s>(rule: &'s str) -> Rule<'s> {
+fn parse_rule(rule: &str) -> Rule {
     use Condition::*;
     match rule.split_once(':') {
         Some((cond, next)) => {
